@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Ignatius Aries Kurniawan - Software Developer</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="Ignatius Aries Kurniawan" name="author">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            padding: 5vh 10vw;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 0;
+        }
+
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            max-width: 38em;
+        }
+
+        @media screen and (max-width: 1280px) {
+            a {
+                color: black;
+                text-decoration: underline;
+                text-decoration-color: #00B388;
+            }
+        }
+
+
+        @media screen and (min-width: 1281px) {
+
+            a {
+                position: relative;
+                text-decoration: none;
+                display: inline-block;
+                color: black;
+                padding: 0 1px;
+                transition: color ease 0.3s;
+            }
+
+            a::before {
+                content: '';
+                position: absolute;
+                background-color: #00B388;
+                z-index: -1;
+                height: 5%;
+                width: 0%;
+                left: 0;
+                bottom: 0;
+                transition: width ease 0.4s;
+            }
+
+            a::after {
+                content: '';
+                position: absolute;
+                background-color: #00B388;
+                z-index: -1;
+                height: 5%;
+                width: 100%;
+                left: 0;
+                bottom: 0;
+                transition: all ease 0.6s;
+            }
+
+            a:hover::before {
+                width: 100%;
+            }
+
+            a:hover::after {
+                left: 100%;
+                width: 0%;
+                transition: all ease 0.2s;
+            }
+        }
+
+        #song {
+            font-style: italic;
+        }
+
+        .fade-in {
+            animation: fadein 1200ms;
+            -moz-animation: fadein 1200ms; /* Firefox */
+            -webkit-animation: fadein 1200ms; /* Safari and Chrome */
+            -o-animation: fadein 3200ms; /* Opera */
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadein {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .delay-1 {
+            animation-delay: 1s;
+            -moz-animation-delay: 1s;
+            -webkit-animation-delay: 1s;
+        }
+
+        .delay-2 {
+            animation-delay: 2s;
+            -moz-animation-delay: 2s;
+            -webkit-animation-delay: 2s;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Hi, call me Aries.</h1>
+<p>
+    I'm a Software Developer based in Stockholm.
+    Back in 2009 I started writing code for embedded systems,
+    but has since moved to full-stack web development.
+</p>
+<p class="fade-in delay-1">
+    When the sun isn’t hiding (which it often does.. o dear Sweden)
+    I play outside with my daughter.
+    Other than that, Goodreads API says since <span id="bookDiffStr">some time ago</span> I’ve been reading <a
+        href="https://www.goodreads.com/review/list/3065136?shelf=currently-reading" id="book">a fantasy book</a>
+    and Spotify API says <span id="songTimeDiff">some time ago</span> I last listened to <span id="song" title="">a rock song</span>.
+</p>
+<p class="fade-in delay-2">
+    Find out more about my work on <a href="https://www.linkedin.com/in/arieskurniawan/">LinkedIn</a>.
+    Or <a href="mailto:aries@kurniawan.dev">send me an email</a>, I'd be happy to chat.
+</p>
+</body>
+
+<script>
+    fetch('https://api.kurniawan.dev/profile')
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Oops..');
+            } else return response.json();
+        })
+        .then(function (data) {
+            const bookTitle = data.currentlyReading[0].title.length < 32 ? data.currentlyReading[0].title : data.currentlyReading[0].title.slice(0, 28) + '...';
+            const bookAuthor = data.currentlyReading[0].author.length < 24 ? data.currentlyReading[0].author : data.currentlyReading[0].author.slice(0, 20) + '...';
+            const book = `${bookTitle} by ${bookAuthor}`;
+            const song = `${data.lastPlayedTracks[0].name} by ${data.lastPlayedTracks[0].artistName}`;
+
+            const songDiff = new Date().getTime() - new Date(data.lastPlayedTracks[0].playedAt).getTime() + 60000; // min diff 1 minute
+            const hours = Math.floor(songDiff / 3600000);
+            const hoursDiffStr = `${hours > 0 ? hours > 1 ? hours + ' hours' : hours + ' hour' : ''}`;// + minutes + ' minutes' : minutes + ' minutes'}`;
+            const minutes = Math.floor(songDiff % 3600000 / 60000);
+            const minutesDiffStr = `${minutes > 1 ? ' ' + minutes + ' minutes' : ' ' + minutes + ' minute'}`;
+            const songDiffStr = `${hoursDiffStr}${minutesDiffStr} ago`
+
+            const bookDiff = new Date().getTime() - new Date(data.currentlyReading[0].dateAdded).getTime();
+            const days = Math.floor(bookDiff / 86400000) + 1;
+            const bookDiffStr = `${days > 1 ? days + ' days ago' : 'yesterday'}`;
+
+            document.getElementById('book').innerText = book;
+            document.getElementById('song').innerHTML = song;
+            document.getElementById('song').title = `last fetched ${new Date().toLocaleDateString()}`;
+            document.getElementById('songTimeDiff').innerHTML = songDiffStr;
+            document.getElementById('bookDiffStr').innerHTML = bookDiffStr;
+
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+</script>
+
+</html>
